@@ -1,0 +1,35 @@
+<local:MyPageRight x:Class="PageOtherTest"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:PCL"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    PanScroll="PanBack">
+    <local:MyScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" x:Name="PanBack">
+        <StackPanel x:Name="PanMain" Margin="25,10">
+            <local:MyCard Margin="0,15" Title="自定义多线程下载">
+                <StackPanel Margin="21,40,21,16">
+                    <TextBlock Text="使用 PCL 的多线程下载引擎下载任意文件。输入下载地址并选择保存位置即可开始，下载进度与速度可在主界面右下角的下载管理浮窗中查看。" TextWrapping="Wrap" Foreground="{DynamicResource ColorBrushGray3}" Margin="0,0,0,14" FontSize="13" />
+                    <local:MyTextBox x:Name="TextUrl" HintText="下载地址（http / https 链接）" Margin="0,0,0,10" />
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <local:MyTextBox x:Name="TextFolder" HintText="保存到的文件夹（留空则在开始时选择）" Margin="0,0,10,0" />
+                        <local:MyButton x:Name="BtnBrowse" Grid.Column="1" Text="浏览" Width="80" Height="35" />
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <local:MyTextBox x:Name="TextFileName" HintText="文件名（留空则自动从下载地址中获取）" Margin="0,0,10,0" />
+                        <local:MyButton x:Name="BtnStart" Grid.Column="1" Text="开始下载" Width="100" Height="35" ColorType="Highlight" />
+                    </Grid>
+                </StackPanel>
+            </local:MyCard>
+        </StackPanel>
+    </local:MyScrollViewer>
+</local:MyPageRight>
