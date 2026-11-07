@@ -457,8 +457,10 @@ Public Class FormMain
             Telemetry("启动")
             '开源版本提示
             If VersionBranchMain = "OpenSource" Then
-                MyMsgBox($"该版本中无法使用以下特性：{vbCrLf}- 更新与联网通知：避免滥用隐患{vbCrLf}{vbCrLf}提示：有时需要用管理员权限运行，请在打开前右键 PCL → 以管理员身份运行。", "开源版本说明")
+                MyMsgBox($"提示：有时需要用管理员权限运行，请在打开前右键 PCL → 以管理员身份运行。", "PCL FE 使用提示")
             End If
+            '自动检查更新（GitHub Releases）
+            GitHubUpdateCheck(False)
         End Sub, "初始化", ThreadPriority.Lowest)
 
         Logger.Info($"第三阶段加载用时：{GetTimeMs() - ApplicationStartTick} ms")

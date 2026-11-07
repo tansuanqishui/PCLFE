@@ -149,8 +149,13 @@
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Button" />
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Button" />
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Button" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <local:MyButton Grid.Column="0" x:Name="BtnSystemUpdate" MinWidth="140" Text="检查更新" Padding="13,0" Margin="0,0,20,0" />
+                        <local:MyComboBox Grid.Column="3" x:Name="ComboUpdateChannel" Width="150" VerticalAlignment="Center" local:SettingService.Key="SystemUpdateChannel" ToolTip="检查更新时包含哪些发布版本">
+                            <local:MyComboBoxItem Content="仅正式版" IsSelected="True" />
+                            <local:MyComboBoxItem Content="全部（含预览版）" />
+                        </local:MyComboBox>
                         <local:MyButton Grid.Column="1" x:Name="BtnSystemSettingExp" MinWidth="140" Text="导出设置" Padding="13,0" Margin="0,0,20,0" />
                         <local:MyButton Grid.Column="2" x:Name="BtnSystemSettingImp" MinWidth="140" Text="导入设置" Padding="13,0" Margin="0,0,20,0" />
                     </Grid>

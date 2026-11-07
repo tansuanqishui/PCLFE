@@ -117,6 +117,7 @@ Public Class Settings
         New Setting("ToolDownloadThread", 63, Source:=Sources.Registry),
         New Setting("ToolDownloadSpeed", 42, Source:=Sources.Registry, OnChanged:=AddressOf ModNet.UpdateNetTaskSpeedLimitHigh),
         New Setting("ToolDownloadSource", 1, Source:=Sources.Registry),
+        New Setting("SystemUpdateChannel", 0, Source:=Sources.Registry), '0=仅正式版 1=全部（含预览版）
         New Setting("ToolDownloadVersion", 1, Source:=Sources.Registry),
         New Setting("ToolDownloadTranslate", 0, Source:=Sources.Registry),
         New Setting("ToolDownloadTranslateV2", 1, Source:=Sources.Registry),

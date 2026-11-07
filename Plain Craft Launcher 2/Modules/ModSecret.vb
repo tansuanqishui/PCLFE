@@ -218,8 +218,125 @@ Friend Module ModSecret
 
 #Region "更新"
 
+    ''' <summary>
+    ''' PCL FE 当前发布版本号；GitHub Release 的 tag 中的数字版本高于它时视为有新版本。
+    ''' </summary>
+    Public Const FeVersion As String = "1.0"
+    Private Const UpdateRepoApi As String = "https://api.github.com/repos/tansuanqishui/PCLFE"
+
     Friend Sub UpdateCheckByButton()
-        Hint("该版本中不包含更新功能……")
+        GitHubUpdateCheck(True)
+    End Sub
+
+    ''' <summary>
+    ''' 从 GitHub Releases 检查更新。IsManual 为 False 时仅在发现新版本时提示。
+    ''' </summary>
+    Friend Sub GitHubUpdateCheck(IsManual As Boolean)
+        RunInNewThread(Sub()
+            Try
+                Dim Release As JObject
+                If Settings.Get(Of Integer)("SystemUpdateChannel") = 1 Then
+                    '全部：包括预览版
+                    Dim All As JArray = NetRequestByClientRetry(UpdateRepoApi & "/releases?per_page=1", RequireJson:=True).DeserializeJson()
+                    If All.Count = 0 Then Throw New Exception("仓库还没有任何发布")
+                    Release = DirectCast(All(0), JObject)
+                Else
+                    Release = NetRequestByClientRetry(UpdateRepoApi & "/releases/latest", RequireJson:=True).DeserializeJson()
+                End If
+                Dim Tag As String = If(Release("tag_name")?.ToString(), "")
+                Dim RemoteVer As Version = ParseTagVersion(Tag)
+                If RemoteVer Is Nothing OrElse RemoteVer <= New Version(FeVersion) Then
+                    If IsManual Then RunInUi(Sub() Hint("当前已是最新版本（" & FeVersion & "）！", HintType.Green))
+                    Return
+                End If
+                '优先下载 exe 资产，其次 zip
+                Dim Asset As JObject = Nothing
+                For Each a As JObject In Release("assets")
+                    If If(a("name")?.ToString(), "").EndsWithF(".exe", True) Then Asset = a : Exit For
+                Next
+                If Asset Is Nothing Then
+                    For Each a As JObject In Release("assets")
+                        If If(a("name")?.ToString(), "").EndsWithF(".zip", True) Then Asset = a : Exit For
+                    Next
+                End If
+                If Asset Is Nothing Then Throw New Exception("新版本中没有可下载的文件")
+                Dim Url As String = Asset("browser_download_url").ToString()
+                Dim FileName As String = Asset("name").ToString()
+                Dim ChangeLog As String = If(Release("body")?.ToString(), "").Trim()
+                If ChangeLog.Length > 600 Then ChangeLog = ChangeLog.Substring(0, 600) & "……"
+                If RunInUiWait(Function() MyMsgBox("发现新版本 " & Tag & "（当前版本 " & FeVersion & "）" & If(ChangeLog = "", "", vbCrLf & vbCrLf & ChangeLog), "检查更新", "立即更新", "取消")) <> 1 Then Return
+                StartUpdateDownload(Url, FileName, Tag)
+            Catch ex As Exception
+                If IsManual Then
+                    RunInUi(Sub() MyMsgBox("检查更新失败：" & ex.Message, "检查更新"))
+                Else
+                    Logger.Warn(ex, "自动检查更新失败")
+                End If
+            End Try
+        End Sub, "GitHub Update Check")
+    End Sub
+
+    ''' <summary>
+    ''' 从 Release tag（如 v1.1）中提取数字版本号。
+    ''' </summary>
+    Private Function ParseTagVersion(Tag As String) As Version
+        Dim Num = Text.RegularExpressions.Regex.Match(If(Tag, ""), "\d+(\.\d+)*")
+        If Not Num.Success Then Return Nothing
+        Dim V As Version = Nothing
+        Return If(Version.TryParse(Num.Value, V), V, Nothing)
+    End Function
+
+    ''' <summary>
+    ''' 使用内置多线程下载获取新版本文件。
+    ''' </summary>
+    Private Sub StartUpdateDownload(Url As String, FileName As String, Tag As String)
+        Dim SaveDir As String = PathTemp & "PCLFEUpdate\"
+        Dim SavePath As String = SaveDir & FileName
+        Directory.CreateDirectory(SaveDir)
+        Dim OnChanged As Action(Of LoaderBase) =
+            Sub(Loader As LoaderBase)
+                If Loader.State = LoadState.Finished Then
+                    RunInUi(Sub()
+                        If MyMsgBox("新版本 " & Tag & " 下载完成！" & vbCrLf & "是否立即重启 PCL FE 并完成更新？", "下载完成", "立即更新", "稍后") = 1 Then
+                            ApplyUpdate(SavePath)
+                        End If
+                    End Sub)
+                ElseIf Loader.State = LoadState.Failed Then
+                    RunInUi(Sub() MyMsgBox("更新下载失败：" & Loader.Error.Message, "下载更新"))
+                End If
+            End Sub
+        Dim Task As New LoaderCombo(Of Integer)("下载更新 " & Tag, {
+            New LoaderDownload("下载更新文件", New List(Of NetFile) From {New NetFile({Url}, SavePath)}) With {.Block = True}
+        }) With {.OnStateChanged = OnChanged}
+        Task.Start(1)
+        LoaderTaskbarAdd(Task)
+        FrmMain.BtnExtraDownload.ShowRefresh()
+        Hint("已开始下载新版本，可在右下角查看进度……", HintType.Green)
+    End Sub
+
+    ''' <summary>
+    ''' 通过临时批处理在退出后替换自身并重启。
+    ''' </summary>
+    Private Sub ApplyUpdate(NewFile As String)
+        Dim Target As String = Process.GetCurrentProcess().MainModule.FileName
+        Dim Pid As Integer = Process.GetCurrentProcess().Id
+        Dim Bat As String = PathTemp & "PCLFEUpdate\update.bat"
+        Dim Content As New Text.StringBuilder()
+        Content.AppendLine("@echo off")
+        Content.AppendLine(":wait")
+        Content.AppendLine($"tasklist /FI ""PID eq {Pid}"" | find ""{Pid}"" >nul")
+        Content.AppendLine("if not errorlevel 1 ( timeout /t 1 /nobreak >nul & goto wait )")
+        If NewFile.EndsWithF(".zip", True) Then
+            Content.AppendLine($"powershell -Command ""Expand-Archive -Force -LiteralPath '{NewFile}' -DestinationPath '{PathTemp}PCLFEUpdate\extracted'""")
+            Content.AppendLine($"for /f ""delims="" %%i in ('dir /b /s ""{PathTemp}PCLFEUpdate\extracted\*.exe""') do copy /y ""%%i"" ""{Target}""")
+        Else
+            Content.AppendLine($"copy /y ""{NewFile}"" ""{Target}""")
+        End If
+        Content.AppendLine($"start """" ""{Target}""")
+        Content.AppendLine("del ""%~f0""")
+        File.WriteAllText(Bat, Content.ToString(), Text.Encoding.Default)
+        Process.Start(New ProcessStartInfo(Bat) With {.WindowStyle = ProcessWindowStyle.Hidden, .CreateNoWindow = True})
+        Environment.Exit(0)
     End Sub
 
     Friend IsUpdateWaitingRestart As Boolean = False
