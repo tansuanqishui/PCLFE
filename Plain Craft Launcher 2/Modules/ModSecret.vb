@@ -1,4 +1,4 @@
-'由于包含加解密等安全信息，本文件中的部分代码已被删除
+﻿'由于包含加解密等安全信息，本文件中的部分代码已被删除
 
 Friend Module ModSecret
 
@@ -234,14 +234,25 @@ Friend Module ModSecret
     Friend Sub GitHubUpdateCheck(IsManual As Boolean)
         RunInNewThread(Sub()
             Try
-                Dim Release As JObject
+                '统一走 releases 列表，避免 /releases/latest 在没有正式版时返回 404
+                Dim All As JArray = NetRequestByClientRetry(UpdateRepoApi & "/releases?per_page=5", RequireJson:=True).DeserializeJson()
+                If All.Count = 0 Then Throw New Exception("仓库还没有任何发布")
+                Dim Release As JObject = Nothing
                 If Settings.Get(Of Integer)("SystemUpdateChannel") = 1 Then
-                    '全部：包括预览版
-                    Dim All As JArray = NetRequestByClientRetry(UpdateRepoApi & "/releases?per_page=1", RequireJson:=True).DeserializeJson()
-                    If All.Count = 0 Then Throw New Exception("仓库还没有任何发布")
+                    '全部：包括预览版，取最新一条
                     Release = DirectCast(All(0), JObject)
                 Else
-                    Release = NetRequestByClientRetry(UpdateRepoApi & "/releases/latest", RequireJson:=True).DeserializeJson()
+                    '仅正式版：跳过预发行版，取第一个正式版
+                    For Each r As JObject In All
+                        If Not CBool(r("prerelease")) Then
+                            Release = r
+                            Exit For
+                        End If
+                    Next
+                    If Release Is Nothing Then
+                        If IsManual Then RunInUi(Sub() Hint("暂无正式版更新（当前版本 " & FeVersion & "）！", HintType.Green))
+                        Return
+                    End If
                 End If
                 Dim Tag As String = If(Release("tag_name")?.ToString(), "")
                 Dim RemoteVer As Version = ParseTagVersion(Tag)
@@ -282,8 +293,11 @@ Friend Module ModSecret
     Private Function ParseTagVersion(Tag As String) As Version
         Dim Num = Text.RegularExpressions.Regex.Match(If(Tag, ""), "\d+(\.\d+)*")
         If Not Num.Success Then Return Nothing
+        Dim VerStr As String = Num.Value
+        'Version 至少需要 major.minor 两段，纯数字 tag（如 "1"）补足为 1.0
+        If Not VerStr.Contains(".") Then VerStr &= ".0"
         Dim V As Version = Nothing
-        Return If(Version.TryParse(Num.Value, V), V, Nothing)
+        Return If(Version.TryParse(VerStr, V), V, Nothing)
     End Function
 
     ''' <summary>
