@@ -282,7 +282,7 @@ Public Class FormMain
         RunInNewThread(
         Sub()
             If MyMsgBox(Content, "PCL 已更新至" & VersionDisplay, "确定", "完整更新日志") = 2 Then
-                OpenWebsite("https://meloong.com/afd/a/LTCat?tab=feed")
+                OpenWebsite("https://afdian.com/a/mt572un")
             End If
         End Sub, "UpdateLog Output")
     End Sub
@@ -457,7 +457,7 @@ Public Class FormMain
             Telemetry("启动")
             '开源版本提示
             If VersionBranchMain = "OpenSource" Then
-                MyMsgBox($"提示：有时需要用管理员权限运行，请在打开前右键 PCL → 以管理员身份运行。", "PCL FE 使用提示")
+                MyMsgBox($"提示：有时需要用管理员权限运行，请在打开前右键 PCL → 以管理员身份运行。{vbCrLf}{vbCrLf}有问题请先不要到「更多 → 反馈」提交，请到 PCL FE 的 GitHub 主页（github.com/tansuanqishui/PCLFE）或哔哩哔哩反馈。", "PCL FE 使用提示")
             End If
             '自动检查更新（GitHub Releases）
             GitHubUpdateCheck(False)

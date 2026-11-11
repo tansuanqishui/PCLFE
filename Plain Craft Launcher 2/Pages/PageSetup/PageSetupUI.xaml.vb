@@ -32,9 +32,9 @@ Public Class PageSetupUI
         'If BuildType = BuildTypes.Release Then PanLauncherHide.Visibility = Visibility.Visible
 
         '设置解锁
-        If Not RadioLauncherTheme8.IsEnabled Then LabLauncherTheme8Copy.ToolTip = $"累积赞助达到 ¥23.33 后，在爱发电私信发送【土豆 {Identify}】以解锁。" & vbCrLf & "右键打开赞助页面，如果觉得 PCL 做得还不错就支持一下吧 =w=！"
-        RadioLauncherTheme8.ToolTip = $"累积赞助达到 ¥23.33 后，在爱发电私信发送【土豆 {Identify}】以解锁"
-        If Not RadioLauncherTheme9.IsEnabled Then LabLauncherTheme9Copy.ToolTip = "· 反馈一个 Bug，在标记为 [完成] 后回复识别码要求解锁（右键打开反馈页面）" & vbCrLf & "· 提交一个 Pull Request 或主页预设，在标记为 [完成] 后回复识别码要求解锁"
+        If Not RadioLauncherTheme8.IsEnabled Then LabLauncherTheme8Copy.ToolTip = $"累积赞助达到 ¥23 后，在爱发电电铺下单会自动发货卡密，左键点击此处粘贴卡密解锁（无需私信识别码）。" & vbCrLf & "右键打开赞助页面，如果觉得 PCL 做得还不错就支持一下吧 =w=！"
+        RadioLauncherTheme8.ToolTip = "累积赞助达到 ¥23 后可解锁（左键点击输入卡密）"
+        If Not RadioLauncherTheme9.IsEnabled Then LabLauncherTheme9Copy.ToolTip = "· 反馈一个 Bug，在标记为 [完成] 后回复识别码要求解锁" & vbCrLf & "· 提交一个 Pull Request 或主页预设，在标记为 [完成] 后回复识别码要求解锁"
         RadioLauncherTheme9.ToolTip = "· 反馈一个 Bug，在标记为 [完成] 后回复识别码要求解锁" & vbCrLf & "· 提交一个 Pull Request 或主页预设，在标记为 [完成] 后回复识别码要求解锁"
         '极客蓝的处理在 ThemeCheck 中
 
@@ -378,11 +378,26 @@ Refresh:
             End If
         End If
     End Sub
-    Private Sub LabLauncherTheme8Copy_MouseRightButtonUp() Handles LabLauncherTheme8Copy.MouseRightButtonUp, RadioLauncherTheme8.MouseRightButtonUp
-        OpenWebsite("https://meloong.com/afd/a/LTCat")
+    '秋仪金：左键输入卡密解锁；已解锁则直接切换主题
+    Private Sub LabLauncherTheme8Copy_MouseLeftButtonUp() Handles LabLauncherTheme8Copy.MouseLeftButtonUp
+        If ThemeCheckOne(8) Then
+            RadioLauncherTheme8.Checked = True
+            Return
+        End If
+        Dim Code As String = MyMsgBoxInput("解锁秋仪金主题",
+            $"在爱发电电铺累计赞助 ¥23 后会自动发货一串卡密，粘贴到下方即可解锁（无需私信发送识别码）。{vbCrLf}右键可打开赞助页面。",
+            , , "PCLFE-XXXXXXXX-...", "解锁", "取消")
+        If Code Is Nothing Then Return
+        If VerifyDonateCard(Code) Then
+            ThemeUnlock(8)
+            Hint("已解锁秋仪金主题，感谢支持！", HintType.Green)
+            Refresh()
+        Else
+            Hint("卡密无效，请检查是否完整复制", HintType.Red)
+        End If
     End Sub
-    Private Sub LabLauncherTheme9Copy_MouseRightButtonUp() Handles LabLauncherTheme9Copy.MouseRightButtonUp, RadioLauncherTheme9.MouseRightButtonUp
-        PageOtherLeft.TryFeedback()
+    Private Sub LabLauncherTheme8Copy_MouseRightButtonUp() Handles LabLauncherTheme8Copy.MouseRightButtonUp, RadioLauncherTheme8.MouseRightButtonUp
+        OpenWebsite("https://afdian.com/a/mt572un")
     End Sub
 
     '主题自定义

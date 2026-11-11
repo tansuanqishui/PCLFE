@@ -254,7 +254,7 @@ NextInner:
                                     "如果 PCL 还算好用的话，能不能考虑赞助一下 PCL……" & vbCrLf &
                                     "如果没有大家的支持，PCL 很难在免费、无任何广告的情况下维持数年的更新（磕头）……！",
                                     Settings.Get(Of Integer)("SystemLaunchCount") & " 次启动！", "支持 PCL！", "但是我拒绝") = 1 Then
-                            OpenWebsite("https://meloong.com/afd/a/LTCat")
+                            OpenWebsite("https://afdian.com/a/mt572un")
                         End If
                 End Select
             End Sub, "Donate")
