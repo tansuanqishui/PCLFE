@@ -221,7 +221,7 @@ Friend Module ModSecret
     ''' <summary>
     ''' PCL FE 当前发布版本号；GitHub Release 的 tag 中的数字版本高于它时视为有新版本。
     ''' </summary>
-    Public Const FeVersion As String = "1.0"
+    Public Const FeVersion As String = "1.1"
     Private Const UpdateRepoApi As String = "https://api.github.com/repos/tansuanqishui/PCLFE"
 
     Friend Sub UpdateCheckByButton()
