@@ -273,10 +273,11 @@ Friend Module ModSecret
                 If Asset Is Nothing Then Throw New Exception("新版本中没有可下载的文件")
                 Dim Url As String = Asset("browser_download_url").ToString()
                 Dim FileName As String = Asset("name").ToString()
+                Dim ExpectedSize As Long = If(Asset("size") IsNot Nothing, CLng(Asset("size")), 0)
                 Dim ChangeLog As String = If(Release("body")?.ToString(), "").Trim()
                 If ChangeLog.Length > 600 Then ChangeLog = ChangeLog.Substring(0, 600) & "……"
                 If RunInUiWait(Function() MyMsgBox("发现新版本 " & Tag & "（当前版本 " & FeVersion & "）" & If(ChangeLog = "", "", vbCrLf & vbCrLf & ChangeLog), "检查更新", "立即更新", "取消")) <> 1 Then Return
-                StartUpdateDownload(Url, FileName, Tag)
+                StartUpdateDownload(Url, FileName, Tag, ExpectedSize)
             Catch ex As Exception
                 If IsManual Then
                     RunInUi(Sub() MyMsgBox("检查更新失败：" & ex.Message, "检查更新"))
@@ -303,13 +304,20 @@ Friend Module ModSecret
     ''' <summary>
     ''' 使用内置多线程下载获取新版本文件。
     ''' </summary>
-    Private Sub StartUpdateDownload(Url As String, FileName As String, Tag As String)
+    Private Sub StartUpdateDownload(Url As String, FileName As String, Tag As String, ExpectedSize As Long)
         Dim SaveDir As String = PathTemp & "PCLFEUpdate\"
         Dim SavePath As String = SaveDir & FileName
         Directory.CreateDirectory(SaveDir)
+        'GitHub 直连在国内常超时，优先走 ghfast.top 镜像加速，官方源作为回退
+        Dim Sources As New List(Of String) From {"https://ghfast.top/" & Url, Url}
         Dim OnChanged As Action(Of LoaderBase) =
             Sub(Loader As LoaderBase)
                 If Loader.State = LoadState.Finished Then
+                    '校验下载完整性，防止镜像返回错误内容
+                    If ExpectedSize > 0 AndAlso (Not File.Exists(SavePath) OrElse New FileInfo(SavePath).Length <> ExpectedSize) Then
+                        RunInUi(Sub() MyMsgBox("更新文件校验失败：大小与发布信息不符，请重试。", "下载更新"))
+                        Return
+                    End If
                     RunInUi(Sub()
                         If MyMsgBox("新版本 " & Tag & " 下载完成！" & vbCrLf & "是否立即重启 PCL FE 并完成更新？", "下载完成", "立即更新", "稍后") = 1 Then
                             ApplyUpdate(SavePath)
@@ -320,7 +328,7 @@ Friend Module ModSecret
                 End If
             End Sub
         Dim Task As New LoaderCombo(Of Integer)("下载更新 " & Tag, {
-            New LoaderDownload("下载更新文件", New List(Of NetFile) From {New NetFile({Url}, SavePath)}) With {.Block = True}
+            New LoaderDownload("下载更新文件", New List(Of NetFile) From {New NetFile(Sources, SavePath)}) With {.Block = True}
         }) With {.OnStateChanged = OnChanged}
         Task.Start(1)
         LoaderTaskbarAdd(Task)
