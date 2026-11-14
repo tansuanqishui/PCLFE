@@ -13,6 +13,8 @@ Public Class PageDownloadLeft
         InitializeComponent()
         If Not RestrictMcDownload Then Return
         ItemInstall.Visibility = Visibility.Collapsed
+        ItemGameJson.Visibility = Visibility.Collapsed
+        ItemGameJar.Visibility = Visibility.Collapsed
         LabResource.Visibility = Visibility.Collapsed
         PageID = FormMain.PageSubType.DownloadMod
         ItemMod.Checked = True
@@ -21,7 +23,7 @@ Public Class PageDownloadLeft
     ''' <summary>
     ''' 勾选事件改变页面。
     ''' </summary>
-    Private Sub PageCheck(sender As FrameworkElement, e As RouteEventArgs) Handles ItemInstall.Check, ItemMod.Check, ItemPack.Check, ItemResourcePack.Check, ItemShader.Check, ItemDataPack.Check
+    Private Sub PageCheck(sender As FrameworkElement, e As RouteEventArgs) Handles ItemInstall.Check, ItemGameJson.Check, ItemGameJar.Check, ItemMod.Check, ItemPack.Check, ItemResourcePack.Check, ItemShader.Check, ItemDataPack.Check
         '尚未初始化控件属性时，sender.Tag 为 Nothing，会导致切换到页面 0
         '若使用 IsLoaded，则会导致模拟点击不被执行（模拟点击切换页面时，控件的 IsLoaded 为 False）
         If sender.Tag IsNot Nothing Then PageChange(Val(sender.Tag))
@@ -33,6 +35,16 @@ Public Class PageDownloadLeft
             Case FormMain.PageSubType.DownloadInstall
                 If FrmDownloadInstall Is Nothing Then FrmDownloadInstall = New PageDownloadInstall
                 Return FrmDownloadInstall
+            Case FormMain.PageSubType.DownloadGameJson
+                If FrmDownloadGameJson Is Nothing Then
+                    FrmDownloadGameJson = New PageDownloadGameFile With {.Mode = PageDownloadGameFile.GameFileType.Json}
+                End If
+                Return FrmDownloadGameJson
+            Case FormMain.PageSubType.DownloadGameJar
+                If FrmDownloadGameJar Is Nothing Then
+                    FrmDownloadGameJar = New PageDownloadGameFile With {.Mode = PageDownloadGameFile.GameFileType.Jar}
+                End If
+                Return FrmDownloadGameJar
             Case FormMain.PageSubType.DownloadMod
                 If FrmDownloadMod Is Nothing Then FrmDownloadMod = New PageDownloadMod
                 Return FrmDownloadMod
@@ -147,6 +159,10 @@ Public Class PageDownloadLeft
                     FrmDownloadDataPack.PageLoaderRestart()
                 End If
                 ItemDataPack.Checked = True
+            Case FormMain.PageSubType.DownloadGameJson, FormMain.PageSubType.DownloadGameJar
+                '两个页面共用原版版本列表加载器，只需重启一次
+                If DlClientListLoader.State <> LoadState.Loading Then DlClientListLoader.Start(IsForceRestart:=True)
+                If SubType = FormMain.PageSubType.DownloadGameJson Then ItemGameJson.Checked = True Else ItemGameJar.Checked = True
         End Select
         Hint("正在刷新……", Log:=False)
     End Sub

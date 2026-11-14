@@ -286,6 +286,9 @@
     <Compile Include="Pages\PageDownload\PageDownloadInstall.xaml.vb">
       <DependentUpon>PageDownloadInstall.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\PageDownload\PageDownloadGameFile.xaml.vb">
+      <DependentUpon>PageDownloadGameFile.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\PageDownload\PageDownloadModify.vb" />
     <Compile Include="Pages\PageDownload\Resource\PageDownloadCompDetail.xaml.vb">
       <DependentUpon>PageDownloadCompDetail.xaml</DependentUpon>
@@ -533,6 +536,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\PageDownload\PageDownloadInstall.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\PageDownload\PageDownloadGameFile.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

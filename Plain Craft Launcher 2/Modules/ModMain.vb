@@ -384,6 +384,8 @@ EndHint:
     Public FrmDownloadDataPack As PageDownloadDataPack
     Public FrmDownloadShader As PageDownloadShader
     Public FrmDownloadResourcePack As PageDownloadResourcePack
+    Public FrmDownloadGameJson As PageDownloadGameFile
+    Public FrmDownloadGameJar As PageDownloadGameFile
 
     '设置页面声明
     Public FrmSetupLeft As PageSetupLeft

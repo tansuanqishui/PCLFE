@@ -1239,11 +1239,13 @@ Public Class FormMain
     Public Enum PageSubType
         [Default] = 0
         DownloadInstall = 0
-        DownloadMod = 2
-        DownloadPack = 3
-        DownloadDataPack = 4
-        DownloadResourcePack = 5
-        DownloadShader = 6
+        DownloadGameJson = 1
+        DownloadGameJar = 2
+        DownloadMod = 4
+        DownloadPack = 5
+        DownloadDataPack = 6
+        DownloadResourcePack = 7
+        DownloadShader = 8
         SetupLaunch = 0
         SetupLink = 1
         SetupUI = 2
