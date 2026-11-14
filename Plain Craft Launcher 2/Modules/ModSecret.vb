@@ -8,18 +8,23 @@ Friend Module ModSecret
     Public Const RegFolder As String = "PCLDebug"
     '用于微软登录的 ClientId
     Public OAuthClientId As String = If(Environment.GetEnvironmentVariable("PCL_MS_CLIENT_ID"), "fe72edc2-3a6f-4280-90e8-e2beb64ce7e1") '未设置环境变量时使用 PCL2 官方构建中的 Client ID
-    'CurseForge API Key（XOR 混淆后编译进二进制，未设置环境变量时使用 HMCL 官方构建中公开的公用 Key）
-    Public CurseForgeAPIKey As String = If(Environment.GetEnvironmentVariable("PCL_CURSEFORGE_API_KEY"), DeobfuscateSecret("fmg7fmtqfjViKiM9CigyLBEYEi8vMm8zNxZoDXQWGRQcMhhrbyAYAxsfIgIidQ4rDiJ1ACpvKiJoNiIv"))
+    'CurseForge API Key（多字节密钥滚动 XOR + 位置扰动混淆后编译进二进制，未设置环境变量时使用 HMCL 官方构建中公开的公用 Key）
+    Public CurseForgeAPIKey As String = If(Environment.GetEnvironmentVariable("PCL_CURSEFORGE_API_KEY"), DeobfuscateSecret("c1doBve8psnpGHVraKSX65IXOw9wy9T6zgRaNQaAxPCQPiQ5EL3N2tiVE1VzFoGPxqB5KA0x0Ji+zjMc"))
     ''' <summary>
-    ''' 解码经 XOR 混淆的内置敏感字符串。
+    ''' 解码经多字节密钥滚动 XOR 与位置扰动混淆的内置敏感字符串。
     ''' </summary>
     Private Function DeobfuscateSecret(Data As String) As String
+        Dim Key = Text.Encoding.ASCII.GetBytes(String.Join(".", SecretKeyPartA, SecretKeyPartB, SecretKeyPartC))
         Dim Bytes = Convert.FromBase64String(Data)
         For i = 0 To Bytes.Length - 1
-            Bytes(i) = Bytes(i) Xor &H5A
+            Bytes(i) = Bytes(i) Xor Key(i Mod Key.Length) Xor ((i * 31 + 7) And &HFF)
         Next
         Return Text.Encoding.UTF8.GetString(Bytes)
     End Function
+    '混淆密钥分段存放，避免在二进制中连续出现
+    Private Const SecretKeyPartA As String = "PCLFE"
+    Private Const SecretKeyPartB As String = "CF"
+    Private Const SecretKeyPartC As String = "v1"
     '用于匿名数据收集的腾讯云日志服务上报 URL，形如 https://{region}.cls.tencentcs.com/track?topic_id={topic_id}
     Public Const ClsBaseUrl As String = ""
 
