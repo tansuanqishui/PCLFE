@@ -258,6 +258,10 @@
     <Compile Include="Modules\Minecraft\ModCrash.vb" />
     <Compile Include="Modules\ModMusic.vb" />
     <Compile Include="Modules\ModDevelop.vb" />
+    <Compile Include="Modules\ModAI.vb" />
+    <Compile Include="Pages\PageAI\PageAI.xaml.vb">
+      <DependentUpon>PageAI.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Modules\Minecraft\ModWatcher.vb" />
     <Compile Include="Modules\ModSecret.vb" />
     <Compile Include="Modules\ModDonateCard.vb" />
@@ -634,6 +638,10 @@
     <Page Include="Pages\PageOther\PageOtherLeft.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\PageAI\PageAI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\PageSetup\PageSetupLeft.xaml">
       <SubType>Designer</SubType>

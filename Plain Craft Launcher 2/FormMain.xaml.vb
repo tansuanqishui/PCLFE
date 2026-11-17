@@ -1231,6 +1231,10 @@ Public Class FormMain
         ''' 帮助详情。这是一个副页面。
         ''' </summary>
         HelpDetail = 9
+        ''' <summary>
+        ''' AI 助手。
+        ''' </summary>
+        AI = 10
     End Enum
     ''' <summary>
     ''' 次要页面种类。其数值必须与 StackPanel 中的下标一致。
@@ -1278,6 +1282,17 @@ Public Class FormMain
                 Return CType(Stack.Additional(0), HelpEntry).Title
             Case Else
                 Return ""
+        End Select
+    End Function
+    ''' <summary>
+    ''' 获取顶级页面在导航栏中的下标。AI 助手的枚举值不与下标对应，需要单独换算。
+    ''' </summary>
+    Private Function PageTitleIndex(Type As PageType) As Integer
+        Select Case Type
+            Case PageType.AI
+                Return 5
+            Case Else
+                Return Type
         End Select
     End Function
     ''' <summary>
@@ -1376,7 +1391,7 @@ Public Class FormMain
             '切换到主页面
             PageChangeExit()
             IsChangingPage = True '防止下面的勾选直接触发了 PageChangeActual
-            CType(PanTitleSelect.Children(Stack), MyRadioButton).SetChecked(True, True, PageNameGet(PageCurrent) = "")
+            CType(PanTitleSelect.Children(PageTitleIndex(Stack.Page)), MyRadioButton).SetChecked(True, True, PageNameGet(PageCurrent) = "")
             IsChangingPage = False
             Select Case Stack.Page
                 Case PageType.Download
@@ -1403,7 +1418,7 @@ Public Class FormMain
     ''' <summary>
     ''' 通过点击导航栏改变页面。
     ''' </summary>
-    Private Sub BtnTitleSelect_Click(sender As MyRadioButton, raiseByMouse As Boolean) Handles BtnTitleSelect0.Check, BtnTitleSelect1.Check, BtnTitleSelect2.Check, BtnTitleSelect3.Check, BtnTitleSelect4.Check
+    Private Sub BtnTitleSelect_Click(sender As MyRadioButton, raiseByMouse As Boolean) Handles BtnTitleSelect0.Check, BtnTitleSelect1.Check, BtnTitleSelect2.Check, BtnTitleSelect3.Check, BtnTitleSelect4.Check, BtnTitleSelect5.Check
         If IsChangingPage Then Return
         PageChangeActual(Val(sender.Tag))
     End Sub
@@ -1507,6 +1522,9 @@ Public Class FormMain
                     PageChangeAnim(New MyPageLeft, FrmDownloadResourceDetail)
                 Case PageType.HelpDetail '帮助详情
                     PageChangeAnim(New MyPageLeft, Stack.Additional(1))
+                Case PageType.AI 'AI 助手
+                    If FrmAI Is Nothing Then FrmAI = New PageAI
+                    PageChangeAnim(New MyPageLeft, FrmAI)
             End Select
 #End Region
 

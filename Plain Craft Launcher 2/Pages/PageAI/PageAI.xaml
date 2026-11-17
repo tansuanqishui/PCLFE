@@ -1,0 +1,53 @@
+<local:MyPageRight
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:PCL"
+    x:Class="PageAI"
+    PanScroll="PanBack">
+    <local:MyScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" x:Name="PanBack">
+        <StackPanel Margin="25,10,25,25">
+            <local:MyCard Title="运行方式" Margin="0,0,0,15">
+                <StackPanel Margin="20,40,20,18">
+                    <TextBlock Text="选择使用本地 Ollama 模型（离线、无需 Key）或任意 OpenAI 兼容的云端接口。配置仅保存在本机。" TextWrapping="Wrap" Foreground="{DynamicResource ColorBrush3}" Margin="0,0,0,10" />
+                    <local:MyComboBox x:Name="ComboProvider" SelectionChanged="ComboProvider_SelectionChanged">
+                        <local:MyComboBoxItem Content="本地 Ollama（离线，无需 Key）" />
+                        <local:MyComboBoxItem Content="云端 API（OpenAI 兼容）" />
+                    </local:MyComboBox>
+                    <StackPanel x:Name="PanLocal" Margin="0,12,0,0">
+                        <TextBlock Text="服务地址" Margin="0,0,0,4" />
+                        <local:MyTextBox x:Name="TextOllamaUrl" HintText="http://127.0.0.1:11434" Margin="0,0,0,10" />
+                        <TextBlock Text="模型" Margin="0,0,0,4" />
+                        <StackPanel Orientation="Horizontal">
+                            <local:MyComboBox x:Name="ComboLocalModel" MinWidth="220" />
+                            <local:MyButton x:Name="BtnRefreshModels" Text="刷新模型" MinWidth="90" Margin="10,0,0,0" />
+                        </StackPanel>
+                        <TextBlock x:Name="LabLocalHint" Text="启动 Ollama 后点击「刷新模型」即可列出已安装的模型。" TextWrapping="Wrap" Foreground="{DynamicResource ColorBrush3}" Margin="0,8,0,0" />
+                    </StackPanel>
+                    <StackPanel x:Name="PanCloud" Visibility="Collapsed" Margin="0,12,0,0">
+                        <TextBlock Text="接口地址（Base URL）" Margin="0,0,0,4" />
+                        <local:MyTextBox x:Name="TextBaseUrl" HintText="https://api.deepseek.com" Margin="0,0,0,10" />
+                        <TextBlock Text="API Key" Margin="0,0,0,4" />
+                        <local:MyTextBox x:Name="TextApiKey" HintText="sk-..." Margin="0,0,0,10" />
+                        <TextBlock Text="模型名称" Margin="0,0,0,4" />
+                        <local:MyTextBox x:Name="TextModel" HintText="deepseek-chat" Margin="0,0,0,0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                        <local:MyButton x:Name="BtnTest" Text="测试连接" MinWidth="110" />
+                        <TextBlock x:Name="LabTestResult" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap" Foreground="{DynamicResource ColorBrush3}" />
+                    </StackPanel>
+                </StackPanel>
+            </local:MyCard>
+            <local:MyCard Title="游戏崩溃分析" Margin="0,0,0,15">
+                <StackPanel Margin="20,40,20,18">
+                    <TextBlock Text="选择崩溃报告（crash-reports/*.txt）或日志（latest.log），AI 会分析崩溃原因并给出解决步骤。日志内容将发送给你配置的服务。" TextWrapping="Wrap" Foreground="{DynamicResource ColorBrush3}" Margin="0,0,0,10" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <local:MyButton x:Name="BtnSelectFile" Text="选择日志文件" MinWidth="110" />
+                        <local:MyButton x:Name="BtnAnalyze" Text="开始分析" MinWidth="110" Margin="10,0,0,0" />
+                    </StackPanel>
+                    <TextBlock x:Name="LabFile" Text="尚未选择文件" TextWrapping="Wrap" Foreground="{DynamicResource ColorBrush3}" Margin="0,0,0,10" />
+                    <TextBox x:Name="TextResult" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MinHeight="160" MaxHeight="420" Padding="8" BorderThickness="0" />
+                </StackPanel>
+            </local:MyCard>
+        </StackPanel>
+    </local:MyScrollViewer>
+</local:MyPageRight>
